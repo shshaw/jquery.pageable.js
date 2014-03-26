@@ -42,8 +42,8 @@
         this.options.beforeChange.call(this, this.$currentPage);
 
         if ( options.showButtons ) {
-        delegateEvents.call(this);
-        addButtons.call(this);
+          delegateEvents.call(this);
+          addButtons.call(this);
         }
         if ( options.showNav ) {
           addNav.call(this);
@@ -231,7 +231,10 @@
     return this.each(function() {
       var pageable = $.data(this, 'pageable');
       if ( pageable ) {
-        if ( isMethod ) {
+        if ( $.isNumeric(options) ) {
+          // Trigger changePage if options is numeric
+          return pageable.changePage.apply(pageable, [options]);
+        } else if ( isMethod ) {
           // Trigger function if options is string
           if ( $.isFunction(pageable[opts]) ) {
             return opts !== 'init' ? pageable[opts].apply(pageable, args) : null;
