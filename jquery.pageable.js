@@ -2,6 +2,7 @@
 
   // Pageable constructor
   var Pageable = function(el, options) {
+        // Initial Setup
         var $currentPage,
             index;
 
@@ -12,7 +13,7 @@
         this.$pages = this.$el.find(options.pageSelector);
 
         // Stop because there aren't multiple pages
-        if ( this.$pages.length < 2 ) return;
+        if ( this.$pages.length < 2 ) { return; }
 
         this.$pages.addClass(options.pageClass);
 
@@ -51,7 +52,8 @@
         this.options.afterChange.call(this, this.$currentPage);
 
       },
-      // private methods
+
+      // Private Methods
       addNav = function() {
         var _this = this;
         this.$indicators = this.$el.append('<nav class="' + this.options.navClass + '">' + $.map(this.$pages, function(el, i) {
@@ -63,6 +65,7 @@
             _this.changePage(_this.$indicators.index(this));
           });
       },
+
       addButtons = function() {
         var prefix = this.options.iconPrefix,
             buttonClass = this.options.buttonClass;
@@ -70,6 +73,7 @@
           return '<button class="' + prefix + dir + ' ' + buttonClass + '"></button>';
         }));
       },
+
       delegateEvents = function() {
         var _this = this,
             prefix = this.options.iconPrefix;
@@ -86,7 +90,8 @@
           ev.preventDefault();
         });
       },
-      // prototype reference
+
+      // Prototype reference
       proto = Pageable.prototype,
       _moving = false,
       defaults;
@@ -104,6 +109,7 @@
       .siblings()
         .removeClass(this.options.activeClass);
   };
+
   proto.changePage = function(index) {
 
     this.options.beforeChange.call(this, this.$currentPage);
@@ -138,6 +144,7 @@
       .removeClass(beforeClass)
         .filter(':not(.' + activeClass + ')')
         .css(this.options.transitionType, 'none');
+
     this.$pages.filter(':lt(' + index + ')')
       .addClass(beforeClass)
         .filter(':not(.' + activeClass + ')')
@@ -203,7 +210,7 @@
       .remove();
   };
 
-  $.fn.pageable = function(options/* args, for, method, etc. */) {
+  $.fn.pageable = function(options) {
     var isMethod = typeof options === 'string',
         args = isMethod ? Array.prototype.slice.call(arguments, 1) : null,
         opts = isMethod ? options : $.extend({}, defaults, options);
@@ -212,6 +219,7 @@
       var pageable = $.data(this, 'pageable');
       if ( pageable ) {
         if ( isMethod ) {
+          // Trigger function if options is string
           if ( $.isFunction(pageable[opts]) ) {
             return opts !== 'init' ? pageable[opts].apply(pageable, args) : null;
           } else {
@@ -226,6 +234,7 @@
   };
 
   defaults = $.fn.pageable.defaults = {
+    // Classes
     pageClass: 'pageable-page',
     activeClass: 'is-active',
     beforeClass: 'is-before',
@@ -237,13 +246,15 @@
     moreClass: 'has-more',
     fewerClass: 'has-fewer',
     screenreaderClass: 'visuallyhidden',
+
+    // Options
     pageSelector: '> *',
-    transitionType: 'transition',
+    transitionType: 'transition', // transition or animation
     directions: ['left', 'right', 'up', 'down'],
     showNav: true,
-    loop: true,
-    pages: 1
+    loop: true, // Loop from beginning to end
     startPage: false, // Index of start page
+    pages: 1,
 
     // Callbacks
     beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
