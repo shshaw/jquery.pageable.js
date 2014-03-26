@@ -202,11 +202,19 @@
     this.init();
   };
 
+  proto.next = function() {
+    this.changePage(this.$pages.index(this.$currentPage) + 1);
+  };
+
+  proto.prev = function() {
+    this.changePage(this.$pages.index(this.$currentPage) - 1);
+  };
+
   proto.close = function() {
     this.$indicators.remove();
     this.$el.removeClass('pageable')
       .off('click.pageable');
-    this.$el.find('>.' + this.options.buttonClass)
+    this.$el.find('> .'+this.options.buttonClass)
       .remove();
   };
 
