@@ -116,6 +116,9 @@
 
     this.options.beforeChange.call(this, this.$currentPage);
 
+    // If not numeric, try to get page index by object
+    index = $.isNumeric(index) ? parseInt(index) : this.$pages.index($(index));
+
     var _this = this,
         howMany = this.options.pages,
         forwards = index > this.$pages.index(this.$currentPage),
