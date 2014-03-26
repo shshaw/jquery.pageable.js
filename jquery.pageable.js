@@ -41,8 +41,10 @@
 
         this.options.beforeChange.call(this, this.$currentPage);
 
+        if ( options.showButtons ) {
         delegateEvents.call(this);
         addButtons.call(this);
+        }
         if ( options.showNav ) {
           addNav.call(this);
         }
@@ -260,6 +262,7 @@
     transitionType: 'transition', // transition or animation
     directions: ['left', 'right', 'up', 'down'],
     showNav: true,
+    showButtons: true,
     loop: true, // Loop from beginning to end
     startPage: false, // Index of start page
     pages: 1,
