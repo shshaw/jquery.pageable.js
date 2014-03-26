@@ -38,12 +38,17 @@
         }
         this.$el.addClass('pageable');
 
+        this.options.beforeChange.call(this, this.$currentPage);
+
         delegateEvents.call(this);
         addButtons.call(this);
         if ( options.showNav ) {
           addNav.call(this);
         }
         this.init();
+
+        this.options.afterLoad.call(this, this.$currentPage);
+        this.options.afterChange.call(this, this.$currentPage);
 
       },
       // private methods
@@ -100,6 +105,9 @@
         .removeClass(this.options.activeClass);
   };
   proto.changePage = function(index) {
+
+    this.options.beforeChange.call(this, this.$currentPage);
+
     var _this = this,
         howMany = this.options.pages,
         forwards = index > this.$pages.index(this.$currentPage),
@@ -142,6 +150,8 @@
     }
 
     this.$currentPage = to;
+    this.options.afterChange.call(this, this.$currentPage);
+
     if ( Modernizr && Modernizr['css' + this.options.transitionType + 's'] ) {
       setTimeout(function() {
         from.addClass(changingClass)
@@ -152,6 +162,7 @@
               .toggleClass(beforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
               setTimeout(function() {
                 from.css(_this.options.transitionType, '');
+                _this.options.afterFromTransition.call(_this, _this.$currentPage);
               }, 20);
           });
         to.css(_this.options.transitionType, '')
@@ -164,6 +175,7 @@
                 .removeClass(beforeClass);
               setTimeout(function() {
                 _this.$pages.css(_this.options.transitionType, '');
+                _this.options.afterToTransition.call(_this, _this.$currentPage);
               }, 20);
             }, 13);
           });
@@ -177,6 +189,8 @@
       _moving = false;
       from.removeClass(activeClass);
       to.addClass(activeClass);
+      _this.options.afterFromTransition.call(_this, _this.$currentPage);
+      _this.options.afterToTransition.call(_this, _this.$currentPage);
     }
     this.init();
   };
@@ -228,6 +242,13 @@
     showNav: true,
     loop: true,
     pages: 1
+
+    // Callbacks
+    beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
+    afterChange: function($currentPage){}, // Triggered after $currentPage variable has been updated
+    afterFromTransition: function($currentPage){}, // Triggered after 'from' transition has finished
+    afterToTransition: function($currentPage){}, // Triggered after 'to' transitions has finished
+    afterLoad: function($currentPage){}, // afterLoad callback
   };
 
 })(jQuery, window.Modernizr);
