@@ -56,7 +56,7 @@
         var _this = this;
         this.$indicators = this.$el.append('<nav class="' + this.options.navClass + '">' + $.map(this.$pages, function(el, i) {
           var title = $(el).data('title');
-          return '<button><span' + ( title ? '' : ' class="' + _this.options.screenreaderClass + '"' ) + '>' + ( title || i + 1 ) + '</span></button>';
+          return '<button class='+_this.options.navButtonClass+'><span' + ( title ? '' : ' class="' + _this.options.screenreaderClass + '"' ) + '>' + ( title || i + 1 ) + '</span></button>';
         }).join('') + '</nav>')
           .find('.' + this.options.navClass + ' button')
           .on('click', function() {
@@ -232,6 +232,7 @@
     changingClass: 'is-changing',
     iconPrefix: 'icon-angle-',
     navClass: 'pageable-nav',
+    navButtonClass: '',
     buttonClass: 'pageable-button',
     moreClass: 'has-more',
     fewerClass: 'has-fewer',
