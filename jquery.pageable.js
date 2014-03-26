@@ -20,7 +20,7 @@
 
         this.eventend = options.transitionType + 'end webkit' + ( options.transitionType.charAt(0).toUpperCase() + options.transitionType.substr(1).toLowerCase() ) + 'End';
 
-        $currentPage = this.$el.find(options.pageSelector + '.' + options.activeClass);
+        $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.activeClass);
 
         this.$currentPage = ( $currentPage.length ? $currentPage : this.$pages.filter(':lt(' + this.options.pages + ')') )
           .addClass(options.activeClass);
@@ -243,6 +243,7 @@
     showNav: true,
     loop: true,
     pages: 1
+    startPage: false, // Index of start page
 
     // Callbacks
     beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
