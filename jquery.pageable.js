@@ -21,6 +21,10 @@
 
         this.eventend = options.transitionType + 'end webkit' + ( options.transitionType.charAt(0).toUpperCase() + options.transitionType.substr(1).toLowerCase() ) + 'End';
 
+        if ( options.startPage === -1 ) {
+          this.$currentPage = null;
+          this.$pages.removeClass(options.activeClass);
+        } else {
         $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.activeClass);
 
         this.$currentPage = ( $currentPage.length ? $currentPage : this.$pages.filter(':lt(' + this.options.pages + ')') )
@@ -37,6 +41,8 @@
           this.$pages.removeClass(options.activeClass);
           this.$currentPage = this.$currentPage.first().addClass(options.activeClass);
         }
+        }
+
         this.$el.addClass('pageable');
 
         this.options.beforeChange.call(this, this.$currentPage);
@@ -128,7 +134,7 @@
       .siblings()
         .removeClass(activeClass);
 
-    if ( this.options.controlsSelector ) {
+    if ( this.options.controlsSelector && this.$currentPage ) {
       var id = this.$currentPage.attr("id");
       this.$controls
         .removeClass(activeClass)
@@ -142,7 +148,9 @@
     this.options.beforeChange.call(this, this.$currentPage);
 
     // If not numeric, try to get page index by object
-    index = $.isNumeric(index) ? parseInt(index) : this.$pages.index($(index));
+    index = $.isNumeric(index) ? parseInt(index) : ( this.$pages.index($(index)) >= 0 ? this.$pages.index($(index)) : '' );
+
+    if ( $.isNumeric(index) ) {
 
     var _this = this,
         howMany = this.options.pages,
@@ -228,6 +236,7 @@
       _this.options.afterToTransition.call(_this, _this.$currentPage);
     }
     this.init();
+    }
   };
 
   proto.next = function() {
