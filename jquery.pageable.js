@@ -25,22 +25,22 @@
           this.$currentPage = null;
           this.$pages.removeClass(options.activeClass);
         } else {
-        $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.activeClass);
+          $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.activeClass);
 
-        this.$currentPage = ( $currentPage.length ? $currentPage : this.$pages.filter(':lt(' + this.options.pages + ')') )
-          .addClass(options.activeClass);
+          this.$currentPage = ( $currentPage.length ? $currentPage : this.$pages.filter(':lt(' + this.options.pages + ')') )
+            .addClass(options.activeClass);
 
-        if ( this.$currentPage.length < options.pages ) {
-          index = this.$pages.index($currentPage) - ( this.$pages.index($currentPage) % options.pages );
-          this.$currentPage = this.$pages.filter(function(i) {
-            return i >= index && i < index + options.pages;
-          }).addClass(options.activeClass);
-        }
+          if ( this.$currentPage.length < options.pages ) {
+            index = this.$pages.index($currentPage) - ( this.$pages.index($currentPage) % options.pages );
+            this.$currentPage = this.$pages.filter(function(i) {
+              return i >= index && i < index + options.pages;
+            }).addClass(options.activeClass);
+          }
 
-        if ( this.$currentPage.length > options.pages ) {
-          this.$pages.removeClass(options.activeClass);
-          this.$currentPage = this.$currentPage.first().addClass(options.activeClass);
-        }
+          if ( this.$currentPage.length > options.pages ) {
+            this.$pages.removeClass(options.activeClass);
+            this.$currentPage = this.$currentPage.first().addClass(options.activeClass);
+          }
         }
 
         this.$el.addClass('pageable');
@@ -160,104 +160,104 @@
 
     if ( $.isNumeric(index) ) {
 
-    var _this = this,
-        howMany = this.options.pages,
-        forwards = index > this.$pages.index(this.$currentPage),
-        to = this.$pages.filter(function(i) {
-          return i >= index && i < index + howMany;
-        }),
-        from = this.$currentPage,
-        activeClass = this.options.activeClass,
-        beforeClass = this.options.beforeClass,
-        changingClass = this.options.changingClass,
-        indexChanged = false,
-        addBeforeToFrom = forwards;
+      var _this = this,
+          howMany = this.options.pages,
+          forwards = index > this.$pages.index(this.$currentPage),
+          to = this.$pages.filter(function(i) {
+            return i >= index && i < index + howMany;
+          }),
+          from = this.$currentPage,
+          activeClass = this.options.activeClass,
+          beforeClass = this.options.beforeClass,
+          changingClass = this.options.changingClass,
+          indexChanged = false,
+          addBeforeToFrom = forwards;
 
-    if ( ! to.length ) {
-      if ( this.options.loop ) {
-        indexChanged = true;
-        index = index <= 0 ? this.$pages.length - this.options.pages : 0;
-        to = this.$pages.filter(function(i) {
-          return i >= index && i < index + howMany;
-        });
-      } else {
-        _moving = false;
-        return;
+      if ( ! to.length ) {
+        if ( this.options.loop ) {
+          indexChanged = true;
+          index = index <= 0 ? this.$pages.length - this.options.pages : 0;
+          to = this.$pages.filter(function(i) {
+            return i >= index && i < index + howMany;
+          });
+        } else {
+          _moving = false;
+          return;
+        }
       }
-    }
 
       // Reset beforeClass on $pages based on new $currentPage
       this.$pages
-      .not(':eq(' + index + ')')
+        .not(':eq(' + index + ')')
           // Prevent transitions on items that aren't changing
           .css(this.options.transitionType, 'none')
           // Accessibility attributes
           .attr("aria-hidden",true)
           .attr("tabindex","-1")
           // Toggle beforeClasses
-        .removeClass(beforeClass)
-        .filter(':lt(' + index + ')')
-          .addClass(beforeClass);
+          .removeClass(beforeClass)
+          .filter(':lt(' + index + ')')
+            .addClass(beforeClass);
 
-    if ( indexChanged ) {
-      addBeforeToFrom = index === 0;
-      to.toggleClass(beforeClass, index !== 0);
-    }
+      if ( indexChanged ) {
+        addBeforeToFrom = index === 0;
+        to.toggleClass(beforeClass, index !== 0);
+      }
 
-    this.$currentPage = to;
-    this.options.afterChange.call(this, this.$currentPage);
+      this.$currentPage = to;
+      this.options.afterChange.call(this, this.$currentPage);
 
-    if ( Modernizr && Modernizr['css' + this.options.transitionType + 's'] ) {
-      setTimeout(function() {
+      if ( Modernizr && Modernizr['css' + this.options.transitionType + 's'] ) {
+        setTimeout(function() {
           if ( from ) {
-        from.css(_this.options.transitionType, '')
+            from.css(_this.options.transitionType, '')
               // Accessibility attributes
               .attr("aria-hidden",false)
-          .addClass(changingClass)
-          .toggleClass(beforeClass, addBeforeToFrom)
-          .one(_this.eventend, function() {
-            from.removeClass(changingClass)
-              .css(_this.options.transitionType, 'none')
-              .toggleClass(beforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
-              setTimeout(function() {
+              .addClass(changingClass)
+              .toggleClass(beforeClass, addBeforeToFrom)
+              .one(_this.eventend, function() {
+                from.removeClass(changingClass)
+                  .css(_this.options.transitionType, 'none')
+                  .toggleClass(beforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
+                  setTimeout(function() {
                     from.css(_this.options.transitionType, '')
                       // Accessibility attributes
                       .attr("aria-hidden",true);
-                _this.options.afterFromTransition.call(_this, _this.$currentPage);
-              }, 20);
-          });
+                    _this.options.afterFromTransition.call(_this, _this.$currentPage);
+                  }, 20);
+              });
           }
-        to.css(_this.options.transitionType, '')
-          .addClass(changingClass)
+          to.css(_this.options.transitionType, '')
+            .addClass(changingClass)
             // Accessibility attributes
             .attr("aria-hidden",false)
             .attr("tabindex","")
-          .one(_this.eventend, function() {
-            _moving = false;
-            setTimeout(function() {
-              to.removeClass(changingClass + ' ' + beforeClass)
-                .nextAll()
-                .removeClass(beforeClass);
+            .one(_this.eventend, function() {
+              _moving = false;
               setTimeout(function() {
-                _this.$pages.css(_this.options.transitionType, '');
-                _this.options.afterToTransition.call(_this, _this.$currentPage);
-              }, 20);
-            }, 13);
-          });
-        setTimeout(function() {
+                to.removeClass(changingClass + ' ' + beforeClass)
+                  .nextAll()
+                  .removeClass(beforeClass);
+                setTimeout(function() {
+                  _this.$pages.css(_this.options.transitionType, '');
+                  _this.options.afterToTransition.call(_this, _this.$currentPage);
+                }, 20);
+              }, 13);
+            });
+          setTimeout(function() {
             if ( from ) { from.removeClass(activeClass); }
-          to.addClass(activeClass);
+            to.addClass(activeClass);
+          }, 20);
         }, 20);
-      }, 20);
-    } else {
-      // Fallback to jquery.animate
-      _moving = false;
-      from.removeClass(activeClass);
-      to.addClass(activeClass);
-      _this.options.afterFromTransition.call(_this, _this.$currentPage);
-      _this.options.afterToTransition.call(_this, _this.$currentPage);
-    }
-    this.init();
+      } else {
+        // Fallback to jquery.animate
+        _moving = false;
+        from.removeClass(activeClass);
+        to.addClass(activeClass);
+        _this.options.afterFromTransition.call(_this, _this.$currentPage);
+        _this.options.afterToTransition.call(_this, _this.$currentPage);
+      }
+      this.init();
     }
   };
 
