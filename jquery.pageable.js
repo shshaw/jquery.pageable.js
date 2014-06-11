@@ -196,6 +196,7 @@
 
     if ( Modernizr && Modernizr['css' + this.options.transitionType + 's'] ) {
       setTimeout(function() {
+          if ( from ) {
         from.css(_this.options.transitionType, '')
           .addClass(changingClass)
           .toggleClass(beforeClass, addBeforeToFrom)
@@ -208,6 +209,7 @@
                 _this.options.afterFromTransition.call(_this, _this.$currentPage);
               }, 20);
           });
+          }
         to.css(_this.options.transitionType, '')
           .addClass(changingClass)
           .one(_this.eventend, function() {
@@ -223,7 +225,7 @@
             }, 13);
           });
         setTimeout(function() {
-          from.removeClass(activeClass);
+            if ( from ) { from.removeClass(activeClass); }
           to.addClass(activeClass);
         }, 20);
       }, 20);
