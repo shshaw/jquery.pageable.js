@@ -45,6 +45,11 @@
 
         this.$el.addClass('pageable');
 
+        if ( options.container ) {
+          this.$container = $("<div class='pageable-pages'></div>").appendTo(this.$el);//.append;
+          this.$pages.appendTo(this.$container);
+        }
+
         this.options.beforeChange.call(this, this.$currentPage);
 
         if ( options.showButtons ) {
@@ -322,6 +327,7 @@
     loop: true, // Loop from beginning to end
     startPage: false, // Index of start page
     pages: 1,
+    container: true, // Wrap pages in container
 
     // Callbacks
     beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
