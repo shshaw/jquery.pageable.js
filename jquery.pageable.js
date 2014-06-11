@@ -65,7 +65,7 @@
         this.init();
 
         this.options.afterLoad.call(this, this.$currentPage);
-        this.options.afterChange.call(this, this.$currentPage);
+        //this.options.afterChange.call(this, this.$currentPage);
 
       },
 
