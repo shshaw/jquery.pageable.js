@@ -48,6 +48,9 @@
         if ( options.showNav ) {
           addNav.call(this);
         }
+        if ( options.controlsSelector ) {
+          activateControls.call(this);
+        }
         this.init();
 
         this.options.afterLoad.call(this, this.$currentPage);
@@ -93,23 +96,45 @@
         });
       },
 
+      activateControls = function() {
+        var _this = this;
+        this.$controls = $(this.options.controlsSelector).click(function(e){
+          var $this = $(this);
+
+          _this.changePage( $this.data("target") || $this.attr("href") );
+
+          e.preventDefault();
+        });
+      },
+
       // Prototype reference
       proto = Pageable.prototype,
       _moving = false,
       defaults;
 
   proto.init = function() {
-    var index = this.$pages.index(this.$currentPage);
+    var index = this.$pages.index(this.$currentPage),
+        activeClass = this.options.activeClass;
+
     if ( ! this.options.loop ) {
       this.$el.toggleClass(this.options.moreClass, index + this.options.pages < this.$pages.length)
         .toggleClass(this.options.fewerClass, index > 0);
     } else {
       this.$el.addClass(this.options.fewerClass + ' ' + this.options.moreClass);
     }
+
     this.$indicators.eq(index)
-      .addClass(this.options.activeClass)
+      .addClass(activeClass)
       .siblings()
-        .removeClass(this.options.activeClass);
+        .removeClass(activeClass);
+
+    if ( this.options.controlsSelector ) {
+      var id = this.$currentPage.attr("id");
+      this.$controls
+        .removeClass(activeClass)
+        .filter("[href='#"+id+"'],[data-target='#"+id+"']")
+          .addClass(activeClass);
+    }
   };
 
   proto.changePage = function(index) {
@@ -145,20 +170,17 @@
       }
     }
 
-    this.$pages.filter(':gt(' + ( index + this.options.pages - 1 ) + ')')
-      .removeClass(beforeClass)
-        .filter(':not(.' + activeClass + ')')
-        .css(this.options.transitionType, 'none');
-
-    this.$pages.filter(':lt(' + index + ')')
-      .addClass(beforeClass)
-        .filter(':not(.' + activeClass + ')')
-        .css(this.options.transitionType, 'none');
+    // Prevent transitions on items that aren't changing
+    this.$pages.css(this.options.transitionType, 'none')
+      // Reset beforeClass on $pages based on new $currentPage
+      .not(':eq(' + index + ')')
+        .removeClass(beforeClass)
+        .filter(':lt(' + index + ')')
+          .addClass(beforeClass);
 
     if ( indexChanged ) {
       addBeforeToFrom = index === 0;
-      to.css(this.options.transitionType, 'none')
-        .toggleClass(beforeClass, index !== 0);
+      to.toggleClass(beforeClass, index !== 0);
     }
 
     this.$currentPage = to;
@@ -166,7 +188,8 @@
 
     if ( Modernizr && Modernizr['css' + this.options.transitionType + 's'] ) {
       setTimeout(function() {
-        from.addClass(changingClass)
+        from.css(_this.options.transitionType, '')
+          .addClass(changingClass)
           .toggleClass(beforeClass, addBeforeToFrom)
           .one(_this.eventend, function() {
             from.removeClass(changingClass)
@@ -265,6 +288,7 @@
 
     // Options
     pageSelector: '> *',
+    controlsSelector: '',
     transitionType: 'transition', // transition or animation
     directions: ['left', 'right', 'up', 'down'],
     showNav: true,
