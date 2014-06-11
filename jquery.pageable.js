@@ -178,10 +178,12 @@
       }
     }
 
-    // Prevent transitions on items that aren't changing
-    this.$pages.css(this.options.transitionType, 'none')
       // Reset beforeClass on $pages based on new $currentPage
+      this.$pages
       .not(':eq(' + index + ')')
+          // Prevent transitions on items that aren't changing
+          .css(this.options.transitionType, 'none')
+          // Toggle beforeClasses
         .removeClass(beforeClass)
         .filter(':lt(' + index + ')')
           .addClass(beforeClass);
