@@ -104,13 +104,16 @@
 
       activateControls = function() {
         var _this = this;
+
         this.$controls = $(this.options.controlsSelector).click(function(e){
           var $this = $(this);
 
           _this.changePage( $this.data("target") || $this.attr("href") );
 
           e.preventDefault();
-        });
+        }).attr("role","tab");
+
+        this.$pages.attr("role","tabpanel");
       },
 
       // Prototype reference
@@ -183,6 +186,9 @@
       .not(':eq(' + index + ')')
           // Prevent transitions on items that aren't changing
           .css(this.options.transitionType, 'none')
+          // Accessibility attributes
+          .attr("aria-hidden",true)
+          .attr("tabindex","-1")
           // Toggle beforeClasses
         .removeClass(beforeClass)
         .filter(':lt(' + index + ')')
@@ -200,6 +206,8 @@
       setTimeout(function() {
           if ( from ) {
         from.css(_this.options.transitionType, '')
+              // Accessibility attributes
+              .attr("aria-hidden",false)
           .addClass(changingClass)
           .toggleClass(beforeClass, addBeforeToFrom)
           .one(_this.eventend, function() {
@@ -207,13 +215,18 @@
               .css(_this.options.transitionType, 'none')
               .toggleClass(beforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
               setTimeout(function() {
-                from.css(_this.options.transitionType, '');
+                    from.css(_this.options.transitionType, '')
+                      // Accessibility attributes
+                      .attr("aria-hidden",true);
                 _this.options.afterFromTransition.call(_this, _this.$currentPage);
               }, 20);
           });
           }
         to.css(_this.options.transitionType, '')
           .addClass(changingClass)
+            // Accessibility attributes
+            .attr("aria-hidden",false)
+            .attr("tabindex","")
           .one(_this.eventend, function() {
             _moving = false;
             setTimeout(function() {
