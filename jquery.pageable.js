@@ -13,40 +13,40 @@
         this.$pages = this.$el.find(options.pageSelector);
 
         // Stop because there aren't multiple pages
-        if ( this.$pages.length < 2 ) { return; }
+        //if ( this.$pages.length < 2 ) { return; }
 
         this.$pages.addClass(options.pageClass);
 
-        this.$indicators = $();
+        this.$nav = $();
 
-        this.eventend = options.transitionType + 'end webkit' + ( options.transitionType.charAt(0).toUpperCase() + options.transitionType.substr(1).toLowerCase() ) + 'End';
+        this.eventend = this.options.transitionType + 'end webkit' + ( this.options.transitionType.charAt(0).toUpperCase() + options.transitionType.substr(1).toLowerCase() ) + 'End';
 
         if ( options.startPage === -1 ) {
           this.$currentPage = null;
-          this.$pages.removeClass(options.activeClass);
+          this.$pages.removeClass(options.pageCurrentClass);
         } else {
-          $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.activeClass);
+          $currentPage = $.isNumeric(options.startPage) ? $(this.$pages[options.startPage]) : this.$pages.filter('.' + options.pageCurrentClass);
 
           this.$currentPage = ( $currentPage.length ? $currentPage : this.$pages.filter(':lt(' + this.options.pages + ')') )
-            .addClass(options.activeClass);
+            .addClass(options.pageCurrentClass);
 
           if ( this.$currentPage.length < options.pages ) {
             index = this.$pages.index($currentPage) - ( this.$pages.index($currentPage) % options.pages );
             this.$currentPage = this.$pages.filter(function(i) {
               return i >= index && i < index + options.pages;
-            }).addClass(options.activeClass);
+            }).addClass(options.pageCurrentClass);
           }
 
           if ( this.$currentPage.length > options.pages ) {
-            this.$pages.removeClass(options.activeClass);
-            this.$currentPage = this.$currentPage.first().addClass(options.activeClass);
+            this.$pages.removeClass(options.pageCurrentClass);
+            this.$currentPage = this.$currentPage.first().addClass(options.pageCurrentClass);
           }
         }
 
         this.$el.addClass('pageable');
 
         if ( options.container ) {
-          this.$container = $("<div class='pageable-pages'></div>").appendTo(this.$el);//.append;
+          this.$container = $("<div class='pageable__pages'></div>").appendTo(this.$el);//.append;
           this.$pages.appendTo(this.$container);
         }
 
@@ -56,12 +56,9 @@
           delegateEvents.call(this);
           addButtons.call(this);
         }
-        if ( options.showNav ) {
-          addNav.call(this);
-        }
-        if ( options.controlsSelector ) {
-          activateControls.call(this);
-        }
+        addNav.call(this);
+        activateControls.call(this);
+
         this.init();
 
         this.options.afterLoad.call(this, this.$currentPage);
@@ -71,15 +68,19 @@
 
       // Private Methods
       addNav = function() {
-        var _this = this;
-        this.$indicators = this.$el.append('<nav class="' + this.options.navClass + '">' + $.map(this.$pages, function(el, i) {
-          var title = $(el).data('title');
-          return '<button class='+_this.options.navButtonClass+'><span' + ( title ? '' : ' class="' + _this.options.screenreaderClass + '"' ) + '>' + ( title || i + 1 ) + '</span></button>';
-        }).join('') + '</nav>')
-          .find('.' + this.options.navClass + ' button')
-          .on('click', function() {
-            _this.changePage(_this.$indicators.index(this));
-          });
+        if ( this.options.showNav ) {
+          var _this = this;
+          if ( this.$nav ) { this.$nav.remove(); }
+          this.$nav = this.$el.append('<nav class="' + this.options.navClass + '">' + $.map(this.$pages, function(el, i) {
+            var title = $(el).data('title');
+            return '<button class='+_this.options.navButtonClass+'><span' + ( title ? '' : ' class="' + _this.options.screenreaderClass + '"' ) + '>' + ( title || i + 1 ) + '</span></button>';
+          }).join('') + '</nav>')
+            .find('.' + this.options.navClass + ' button')
+            .on('click', function() {
+              _this.changePage(_this.$nav.index(this));
+            });
+
+        }
       },
 
       addButtons = function() {
@@ -108,17 +109,23 @@
       },
 
       activateControls = function() {
-        var _this = this;
+        if ( this.options.controlsSelector ) {
+          var _this = this;
 
-        this.$controls = $(this.options.controlsSelector).click(function(e){
-          var $this = $(this);
+          this.$controls = $(this.options.controlsSelector).addClass(this.options.controlsClass).click(function(e){
+            var $this = $(this),
+              target = $this.data("target") || $this.attr("href");
 
-          _this.changePage( $this.data("target") || $this.attr("href") );
+            _this.options.controlClick.call(_this, this, e);
 
-          e.preventDefault();
-        }).attr("role","tab");
+            if ( $(target).length ) {
+              _this.changePage( target );
+              e.preventDefault();
+            }
+          }).attr("role","tab");
 
-        this.$pages.attr("role","tabpanel");
+          this.$pages.attr("role","tabpanel");
+        }
       },
 
       // Prototype reference
@@ -128,7 +135,7 @@
 
   proto.init = function() {
     var index = this.$pages.index(this.$currentPage),
-        activeClass = this.options.activeClass;
+        pageCurrentClass = this.options.pageCurrentClass;
 
     if ( ! this.options.loop ) {
       this.$el.toggleClass(this.options.moreClass, index + this.options.pages < this.$pages.length)
@@ -137,26 +144,43 @@
       this.$el.addClass(this.options.fewerClass + ' ' + this.options.moreClass);
     }
 
-    this.$indicators.eq(index)
-      .addClass(activeClass)
-      .siblings()
-        .removeClass(activeClass);
+    if ( this.options.showNav ) {
+      this.$nav.eq(index)
+        .addClass(this.options.navCurrentClass)
+        .siblings()
+          .removeClass(this.options.navCurrentClass);
+    }
 
     if ( this.options.controlsSelector && this.$currentPage ) {
       var id = this.$currentPage.attr("id");
       this.$controls
-        .removeClass(activeClass)
+        .removeClass(this.options.controlsCurrentClass)
         .filter("[href='#"+id+"'],[data-target='#"+id+"']")
-          .addClass(activeClass);
+          .addClass(this.options.controlsCurrentClass);
     }
   };
 
-  proto.changePage = function(index) {
+  proto.index = function(){
+    console.log("reindexing");
+    this.$pages = this.$el.find(this.options.pageSelector);
+    this.$pages
+      .addClass(this.options.pageClass)
+      .removeClass(this.options.pageBeforeClass)
+      .filter(':lt(' + this.$pages.index("." + this.options.pageCurrentClass) + ')')
+        .addClass(this.options.pageBeforeClass);
+
+    addNav.call(this);
+    //activateControls.call(this);
+
+    this.init();
+  };
+
+  proto.changePage = function(page) {
 
     this.options.beforeChange.call(this, this.$currentPage);
 
     // If not numeric, try to get page index by object
-    index = $.isNumeric(index) ? parseInt(index) : ( this.$pages.index($(index)) >= 0 ? this.$pages.index($(index)) : '' );
+    index = $.isNumeric(page) ? parseInt(page) : ( this.$pages.index($(page)) >= 0 ? this.$pages.index($(page)) : '' );
 
     if ( $.isNumeric(index) ) {
 
@@ -167,9 +191,9 @@
             return i >= index && i < index + howMany;
           }),
           from = this.$currentPage,
-          activeClass = this.options.activeClass,
-          beforeClass = this.options.beforeClass,
-          changingClass = this.options.changingClass,
+          pageCurrentClass = this.options.pageCurrentClass,
+          pageBeforeClass = this.options.pageBeforeClass,
+          pageChangingClass = this.options.pageChangingClass,
           indexChanged = false,
           addBeforeToFrom = forwards;
 
@@ -186,7 +210,7 @@
         }
       }
 
-      // Reset beforeClass on $pages based on new $currentPage
+      // Reset pageBeforeClass on $pages based on new $currentPage
       this.$pages
         .not(':eq(' + index + ')')
           // Prevent transitions on items that aren't changing
@@ -194,14 +218,14 @@
           // Accessibility attributes
           .attr("aria-hidden",true)
           .attr("tabindex","-1")
-          // Toggle beforeClasses
-          .removeClass(beforeClass)
+          // Toggle pageBeforeClasses
+          .removeClass(pageBeforeClass)
           .filter(':lt(' + index + ')')
-            .addClass(beforeClass);
+            .addClass(pageBeforeClass);
 
       if ( indexChanged ) {
         addBeforeToFrom = index === 0;
-        to.toggleClass(beforeClass, index !== 0);
+        to.toggleClass(pageBeforeClass, index !== 0);
       }
 
       this.$currentPage = to;
@@ -213,12 +237,12 @@
             from.css(_this.options.transitionType, '')
               // Accessibility attributes
               .attr("aria-hidden",false)
-              .addClass(changingClass)
-              .toggleClass(beforeClass, addBeforeToFrom)
+              .addClass(pageChangingClass)
+              .toggleClass(pageBeforeClass, addBeforeToFrom)
               .one(_this.eventend, function() {
-                from.removeClass(changingClass)
+                from.removeClass(pageChangingClass)
                   .css(_this.options.transitionType, 'none')
-                  .toggleClass(beforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
+                  .toggleClass(pageBeforeClass, forwards || ( ! addBeforeToFrom && indexChanged ));
                   setTimeout(function() {
                     from.css(_this.options.transitionType, '')
                       // Accessibility attributes
@@ -228,16 +252,16 @@
               });
           }
           to.css(_this.options.transitionType, '')
-            .addClass(changingClass)
+            .addClass(pageChangingClass)
             // Accessibility attributes
             .attr("aria-hidden",false)
             .attr("tabindex","")
             .one(_this.eventend, function() {
               _moving = false;
               setTimeout(function() {
-                to.removeClass(changingClass + ' ' + beforeClass)
+                to.removeClass(pageChangingClass + ' ' + pageBeforeClass)
                   .nextAll()
-                  .removeClass(beforeClass);
+                  .removeClass(pageBeforeClass);
                 setTimeout(function() {
                   _this.$pages.css(_this.options.transitionType, '');
                   _this.options.afterToTransition.call(_this, _this.$currentPage);
@@ -245,15 +269,15 @@
               }, 13);
             });
           setTimeout(function() {
-            if ( from ) { from.removeClass(activeClass); }
-            to.addClass(activeClass);
+            if ( from ) { from.removeClass(pageCurrentClass); }
+            to.addClass(pageCurrentClass);
           }, 20);
         }, 20);
       } else {
         // Fallback to jquery.animate
         _moving = false;
-        from.removeClass(activeClass);
-        to.addClass(activeClass);
+        from.removeClass(pageCurrentClass);
+        to.addClass(pageCurrentClass);
         _this.options.afterFromTransition.call(_this, _this.$currentPage);
         _this.options.afterToTransition.call(_this, _this.$currentPage);
       }
@@ -270,7 +294,7 @@
   };
 
   proto.close = function() {
-    this.$indicators.remove();
+    this.$nav.remove();
     this.$el.removeClass('pageable')
       .off('click.pageable');
     this.$el.find('> .'+this.options.buttonClass)
@@ -303,18 +327,27 @@
     });
   };
 
-  defaults = $.fn.pageable.defaults = {
+  var defaults = $.fn.pageable.defaults = {
+
     // Classes
-    pageClass: 'pageable-page',
-    activeClass: 'is-active',
-    beforeClass: 'is-before',
-    changingClass: 'is-changing',
-    iconPrefix: 'icon-angle-',
-    navClass: 'pageable-nav',
+    pageableClass: 'pageable',
+    moreClass: 'pageable--more',
+    fewerClass: 'pageable--fewer',
+    containerClass: 'pageable__container',
+    pageClass: 'pageable__page',
+    pageCurrentClass: 'pageable__page--current',
+    pageBeforeClass: 'pageable__page--before',
+    pageChangingClass: 'pageable__page--changing',
+
+    controlsClass: 'pageable__control',
+    controlsCurrentClass: 'pageable__control--current',
+
+    navClass: 'pageable__nav',
+    navCurrentClass: 'pageable__nav--current',
     navButtonClass: '',
-    buttonClass: 'pageable-button',
-    moreClass: 'has-more',
-    fewerClass: 'has-fewer',
+
+    buttonClass: 'pageable__button',
+    iconPrefix: 'icon-angle-',
     screenreaderClass: 'visuallyhidden',
 
     // Options
@@ -330,6 +363,7 @@
     container: true, // Wrap pages in container
 
     // Callbacks
+    controlClick: function($currentPage,e,$target){}, // Triggered before $currentPage variable has been updated
     beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
     afterChange: function($currentPage){}, // Triggered after $currentPage variable has been updated
     afterFromTransition: function($currentPage){}, // Triggered after 'from' transition has finished

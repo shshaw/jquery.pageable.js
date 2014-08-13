@@ -1,0 +1,178 @@
+////////////////////////////////////////
+
+/* @group Pageable */
+
+  .pageable {
+    position: relative;
+    overflow: hidden;
+  }
+
+/* @end */
+
+////////////////////////////////////////
+
+/* @group Page Transitions */
+
+  .pageable__page {
+    z-index: 1;
+  	opacity: 0;
+  	filter: alpha(opacity=0);
+  	transition: opacity 400ms ease-in-out;
+  }
+
+  .pageable__page:first-child {
+    z-index: 2;
+  }
+
+  .pageable__page--current {
+    z-index: 5;
+  	opacity: 1;
+  	filter: alpha(opacity=100);
+  }
+
+/* @end */
+
+////////////////////////////////////////
+
+.pageable--vertical,
+.pageable--horizontal {
+  transform: translateZ(0);
+
+  .pageable__page {
+    position: absolute;
+    top: 0;
+    overflow: hidden;
+    transition: all 800ms ease-in-out;
+    transition-timing-function: cubic-bezier(.68,0,.39,1);
+    transition-timing-function: cubic-bezier(.48,.14,.1,1); //cubic-bezier(.68,-0.67,.39,1);
+  }
+
+  .pageable__page--current {
+    position: relative;
+    overflow: visible;
+  }
+
+}
+
+
+/* @group Horizontal Slide */
+
+  .pageable--horizontal {
+
+    .pageable__page {
+      transform: translateX(100%);
+    }
+
+    .pageable__page--before {
+      transform: translateX(-100%);
+    }
+
+    .pageable__page--current {
+      transform: translateX(0);
+    }
+
+    .no-csstransforms & {
+      //.pageable__page { transition: left 400ms ease-out, max-height 0ms linear 400ms; }
+      .pageable__page { left: 100%; }
+      .pageable__page--before { left: -100%; }
+      .pageable__page--current { left: 0; }
+    }
+  }
+
+/* @end */
+
+////////////////////////////////////////
+
+/* @group Horizontal Slide */
+
+  .pageable--vertical {
+
+    .pageable__page {
+      transform: translateY(100%);
+    }
+
+    .pageable__page--before {
+      transform: translateY(-100%);
+    }
+
+    .pageable__page--current {
+      transform: translateY(0);
+    }
+
+    .no-csstransforms & {
+      //.pageable__page { transition: top 400ms ease-out; }
+      .pageable__page { top: 100%; }
+      .pageable__page--before { top: -100%; }
+      .pageable__page--current { top: 0; }
+    }
+  }
+
+/* @end */
+
+/*
+.pageable.has-Nav {
+  .pageable__page {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+  .pageable-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    z-index: 6;
+
+    &--Disabled {
+      opacity: 0.25;
+      outline: none;
+      cursor: default;
+    }
+  }
+
+  .pageable-button.icon-Arrow-Left {
+    left: 0;
+  }
+
+  .pageable-button.icon-Arrow-Right {
+    right: 0;
+  }
+}
+
+
+.pageable.has-Pagination {
+
+  .Pagination {
+  	margin: @spacing-text auto;
+  	text-align: center;
+  	z-index: 10;
+
+  	@pagination-color: @gray-light;
+
+  	button {
+  		display: inline-block;
+  		overflow: hidden;
+  		margin: 0 0.5rem;
+  		width: 1.6rem;
+  		height: 1.6rem;
+  		outline: none;
+  		border: solid 3px transparent;
+  		border-radius: 50%;
+  		background: @pagination-color;
+  		color: @pagination-color;
+  		text-indent: 100%;
+  		transform: scale(0.6);
+  		.transition(all @transition-base ease);
+
+  		&--Current {
+  			background: @pagination-color;
+  			transform: scale(1);
+
+  			.no-csstransforms & {
+  			  background: @white;
+  			  border-color: @pagination-color;
+  			}
+  		}
+
+  	}
+  }
+}*/
