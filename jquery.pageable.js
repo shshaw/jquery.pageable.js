@@ -118,6 +118,8 @@
 
             _this.options.controlClick.call(_this, this, e);
 
+            if (e.metaKey || e.ctrlKey) { return; } // If user is attempting to open new tab, don't e.preventDefault();
+
             if ( $(target).length ) {
               _this.changePage( target );
               e.preventDefault();
