@@ -1,4 +1,5 @@
 (function($, Modernizr) {
+  /* jshint browser: true, devel: true, jquery: true */
 
   // Pageable constructor
   var Pageable = function(el, options) {
@@ -136,8 +137,7 @@
       defaults;
 
   proto.init = function() {
-    var index = this.$pages.index(this.$currentPage),
-        pageCurrentClass = this.options.pageCurrentClass;
+    var index = this.$pages.index(this.$currentPage);
 
     if ( ! this.options.loop ) {
       this.$el.toggleClass(this.options.moreClass, index + this.options.pages < this.$pages.length)
@@ -182,7 +182,7 @@
     this.options.beforeChange.call(this, this.$currentPage);
 
     // If not numeric, try to get page index by object
-    index = $.isNumeric(page) ? parseInt(page) : ( this.$pages.index($(page)) >= 0 ? this.$pages.index($(page)) : '' );
+    var index = $.isNumeric(page) ? parseInt(page) : ( this.$pages.index($(page)) >= 0 ? this.$pages.index($(page)) : '' );
 
     if ( $.isNumeric(index) ) {
 
@@ -319,7 +319,8 @@
           if ( $.isFunction(pageable[opts]) ) {
             return opts !== 'init' ? pageable[opts].apply(pageable, args) : null;
           } else {
-            return console.warn('The Pageable object has no method ' + opts);
+            console.warn('The Pageable object has no method ' + opts);
+            return false;
           }
         } else {
           pageable.close();
@@ -329,7 +330,7 @@
     });
   };
 
-  var defaults = $.fn.pageable.defaults = {
+  defaults = $.fn.pageable.defaults = {
 
     // Classes
     pageableClass: 'pageable',
@@ -365,12 +366,12 @@
     container: true, // Wrap pages in container
 
     // Callbacks
-    controlClick: function($currentPage,e,$target){}, // Triggered before $currentPage variable has been updated
-    beforeChange: function($currentPage){}, // Triggered before $currentPage variable has been updated
-    afterChange: function($currentPage){}, // Triggered after $currentPage variable has been updated
-    afterFromTransition: function($currentPage){}, // Triggered after 'from' transition has finished
-    afterToTransition: function($currentPage){}, // Triggered after 'to' transitions has finished
-    afterLoad: function($currentPage){}, // afterLoad callback
+    controlClick: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage,e,$target){}
+    beforeChange: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage){}
+    afterChange: $.noop(), // Triggered after $currentPage variable has been updated, function($currentPage){}
+    afterFromTransition: $.noop(), // Triggered after 'from' transition has finished, function($currentPage){}
+    afterToTransition: $.noop(), // Triggered after 'to' transitions has finished, function($currentPage){}
+    afterLoad: $.noop(), // afterLoad callback, function($currentPage){}
   };
 
 })(jQuery, window.Modernizr);
