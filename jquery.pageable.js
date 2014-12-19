@@ -366,12 +366,12 @@
     container: true, // Wrap pages in container
 
     // Callbacks
-    controlClick: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage,e,$target){}
-    beforeChange: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage){}
-    afterChange: $.noop(), // Triggered after $currentPage variable has been updated, function($currentPage){}
-    afterFromTransition: $.noop(), // Triggered after 'from' transition has finished, function($currentPage){}
-    afterToTransition: $.noop(), // Triggered after 'to' transitions has finished, function($currentPage){}
-    afterLoad: $.noop(), // afterLoad callback, function($currentPage){}
+    controlClick: function(){}, // Triggered before $currentPage variable has been updated, function($currentPage,e,$target){}
+    beforeChange: function(){}, // Triggered before $currentPage variable has been updated, function($currentPage){}
+    afterChange: function(){}, // Triggered after $currentPage variable has been updated, function($currentPage){}
+    afterFromTransition: function(){}, // Triggered after 'from' transition has finished, function($currentPage){}
+    afterToTransition: function(){}, // Triggered after 'to' transitions has finished, function($currentPage){}
+    afterLoad: function(){}, // afterLoad callback, function($currentPage){}
   };
 
 })(jQuery, window.Modernizr);
