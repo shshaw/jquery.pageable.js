@@ -44,7 +44,10 @@
           }
         }
 
-        this.$el.addClass('pageable');
+        this.$el
+          .addClass('pageable')
+          .toggleClass('pageable--loop',this.options.loop)
+          .toggleClass('pageable--reverse',this.options.reverse);
 
         if ( options.container ) {
           this.$container = $("<div class='pageable__pages'></div>").appendTo(this.$el);//.append;
@@ -54,7 +57,6 @@
         this.options.beforeChange.call(this, this.$currentPage);
 
         if ( options.showButtons ) {
-          delegateEvents.call(this);
           addButtons.call(this);
         }
         addNav.call(this);
@@ -85,28 +87,28 @@
       },
 
       addButtons = function() {
-        var prefix = this.options.iconPrefix,
-            buttonClass = this.options.buttonClass;
-        this.$el.append($.map(this.options.directions, function(dir) {
-          return '<button class="' + prefix + dir + ' ' + buttonClass + '"></button>';
-        }));
-      },
-
-      delegateEvents = function() {
         var _this = this,
-            prefix = this.options.iconPrefix;
-        this.$el.on('click.pageable', '[class^="' + prefix + '"]', function(ev) {
-          var dir,
-              forwards;
-          if ( ! _moving ) {
-            _moving = true;
-            dir = this.className.match(new RegExp('\\b' + prefix + '(.*?)(?:\\s|$)'))[1].toLowerCase();
-            forwards = ( dir === 'right' || dir === 'down' );
-            _this.changePage(_this.$pages.index(_this.$currentPage) + ( forwards ? 1 : -1 ) * _this.options.pages);
-          }
-          ev.stopPropagation();
-          ev.preventDefault();
-        });
+            buttonClass = this.options.buttonClass,
+            buttonNextClass = this.options.buttonNextClass,
+            buttonPrevClass = this.options.buttonPrevClass;
+
+        this.$buttonPrev = $('<button>',{
+              'class': buttonClass + ' ' + buttonPrevClass
+            }).on('click', function(ev) {
+              _this.prev();
+              ev.stopPropagation();
+              ev.preventDefault();
+            });
+
+        this.$buttonNext = $('<button>',{
+              'class': buttonClass + ' ' + buttonNextClass
+            }).on('click', function(ev) {
+              _this.next();
+              ev.stopPropagation();
+              ev.preventDefault();
+            });
+
+        this.$el.append(this.$buttonPrev,this.$buttonNext);
       },
 
       activateControls = function() {
@@ -218,8 +220,10 @@
           // Prevent transitions on items that aren't changing
           .css(this.options.transitionType, 'none')
           // Accessibility attributes
-          .attr("aria-hidden",true)
-          .attr("tabindex","-1")
+          .attr(( _this.options.aria ? {
+             "aria-hidden": true,
+             "tabindex": "-1"
+          } : {}))
           // Toggle pageBeforeClasses
           .removeClass(pageBeforeClass)
           .filter(':lt(' + index + ')')
@@ -238,7 +242,9 @@
           if ( from ) {
             from.css(_this.options.transitionType, '')
               // Accessibility attributes
-              .attr("aria-hidden",false)
+              .attr(( _this.options.aria ? {
+                 "aria-hidden": false
+              } : {}))
               .addClass(pageChangingClass)
               .toggleClass(pageBeforeClass, addBeforeToFrom)
               .one(_this.eventend, function() {
@@ -248,16 +254,24 @@
                   setTimeout(function() {
                     from.css(_this.options.transitionType, '')
                       // Accessibility attributes
-                      .attr("aria-hidden",true);
+                    // Accessibility attributes
+                    .attr(( _this.options.aria ? {
+                       "aria-hidden": true,
+                       "tabindex": "-1"
+                    } : {}))
                     _this.options.afterFromTransition.call(_this, _this.$currentPage);
                   }, 20);
               });
           }
+
           to.css(_this.options.transitionType, '')
             .addClass(pageChangingClass)
             // Accessibility attributes
-            .attr("aria-hidden",false)
-            .attr("tabindex","")
+            .attr(( _this.options.aria ? {
+               "aria-hidden": false,
+               "tabindex": ""
+            } : {}))
+            // Accessibility attributes
             .one(_this.eventend, function() {
               _moving = false;
               setTimeout(function() {
@@ -279,7 +293,12 @@
         // Fallback to jquery.animate
         _moving = false;
         from.removeClass(pageCurrentClass);
-        to.addClass(pageCurrentClass);
+        to.addClass(pageCurrentClass)
+          // Accessibility attributes
+          .attr(( _this.options.aria ? {
+             "aria-hidden": false,
+             "tabindex": ""
+          } : {}));
         _this.options.afterFromTransition.call(_this, _this.$currentPage);
         _this.options.afterToTransition.call(_this, _this.$currentPage);
       }
@@ -288,11 +307,17 @@
   };
 
   proto.next = function() {
-    this.changePage(this.$pages.index(this.$currentPage) + 1);
+    if ( ! _moving ) {
+      _moving = true;
+      this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? -1 : 1) * this.options.skip);
+    }
   };
 
   proto.prev = function() {
-    this.changePage(this.$pages.index(this.$currentPage) - 1);
+    if ( ! _moving ) {
+      _moving = true;
+      this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? 1 : -1) * this.options.skip);
+    }
   };
 
   proto.close = function() {
@@ -336,7 +361,9 @@
     pageableClass: 'pageable',
     moreClass: 'pageable--more',
     fewerClass: 'pageable--fewer',
+
     containerClass: 'pageable__container',
+
     pageClass: 'pageable__page',
     pageCurrentClass: 'pageable__page--current',
     pageBeforeClass: 'pageable__page--before',
@@ -350,28 +377,35 @@
     navButtonClass: '',
 
     buttonClass: 'pageable__button',
-    iconPrefix: 'icon-angle-',
+    buttonPrevClass: 'pageable__button--prev',
+    buttonNextClass: 'pageable__button--next',
+
     screenreaderClass: 'visuallyhidden',
 
     // Options
     pageSelector: '> *',
     controlsSelector: '',
     transitionType: 'transition', // transition or animation
-    directions: ['left', 'right', 'up', 'down'],
+    //directions: ['left', 'right'], // Options available: ['left', 'right', 'up', 'down']
     showNav: true,
     showButtons: true,
     loop: true, // Loop from beginning to end
     startPage: false, // Index of start page
     pages: 1,
     container: true, // Wrap pages in container
+    aria: true, // support aria roles and tab-index
+
+
+    skip: 1,
+    reverse: false,
 
     // Callbacks
-    controlClick: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage,e,$target){}
-    beforeChange: $.noop(), // Triggered before $currentPage variable has been updated, function($currentPage){}
-    afterChange: $.noop(), // Triggered after $currentPage variable has been updated, function($currentPage){}
-    afterFromTransition: $.noop(), // Triggered after 'from' transition has finished, function($currentPage){}
-    afterToTransition: $.noop(), // Triggered after 'to' transitions has finished, function($currentPage){}
-    afterLoad: $.noop(), // afterLoad callback, function($currentPage){}
+    controlClick: function(){}, // Triggered before $currentPage variable has been updated, function($currentPage,e,$target){}
+    beforeChange: function(){}, // Triggered before $currentPage variable has been updated, function($currentPage){}
+    afterChange: function(){}, // Triggered after $currentPage variable has been updated, function($currentPage){}
+    afterFromTransition: function(){}, // Triggered after 'from' transition has finished, function($currentPage){}
+    afterToTransition: function(){}, // Triggered after 'to' transitions has finished, function($currentPage){}
+    afterLoad: function(){}, // afterLoad callback, function($currentPage){}
   };
 
 })(jQuery, window.Modernizr);
