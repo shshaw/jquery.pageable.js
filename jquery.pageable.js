@@ -5,9 +5,12 @@
   var Pageable = function(el, options) {
         // Initial Setup
         var $currentPage,
-            index;
+            index,
+            _this = this;
 
         this.options = options;
+
+
 
         this.el = el.jquery ? el[0] : el;
         this.$el = el.jquery ? el : $(el);
@@ -61,6 +64,97 @@
         }
         addNav.call(this);
         activateControls.call(this);
+
+
+        if ( options.swipe ) {
+
+          var swipe = {
+
+          	touches : {
+          		"touchstart": {"x":-1, "y":-1},
+          		"touchmove" : {"x":-1, "y":-1},
+          		"touchend"  : false,
+          		"direction" : "undetermined",
+          		"range": 100
+          	},
+
+          	touchHandler: function(event) {
+          		var touch;
+          		if (typeof event !== 'undefined' && typeof event.touches !== 'undefined') {
+        				touch = event.touches[0];
+        				switch (event.type) {
+        					case 'touchstart':
+        					case 'touchmove':
+
+        						swipe.touches[event.type].y = touch.pageY;
+                    swipe.touches[event.type].x = touch.pageX;
+
+        						if ( event.type == 'touchmove' ) {
+          						if ( Math.max(swipe.touches.touchmove.y,swipe.touches.touchstart.y) - swipe.touches.range > Math.min(swipe.touches.touchmove.y,swipe.touches.touchstart.y) ) {
+            						swipe.touches[event.type].x = -1;
+            						console.log('VERTICAL');
+            						return false;
+                      } else {
+                        //event.preventDefault();
+          						  console.log(( swipe.touches[event.type].x - swipe.touches.touchstart.x ));
+            						_this.$currentPage.css({
+              						'transition' : 'none',
+              						'transform' : 'translateX(' + ( swipe.touches[event.type].x - swipe.touches.touchstart.x ) / 2 + 'px)'
+            						});
+            				  }
+          				  }
+
+        						break;
+
+        					case 'touchend':
+
+        						swipe.touches[event.type] = true;
+        						if (swipe.touches.touchstart.x > -1 && swipe.touches.touchmove.x > -1) {
+              			  event.preventDefault();
+        							swipe.touches.direction = ( swipe.touches.touchstart.x < swipe.touches.touchmove.x ? "right" : "left" );
+
+                      _this.$currentPage.css({
+            						'transition' : ''
+                      });
+
+                      var distance = Math.max(swipe.touches.touchmove.x,swipe.touches.touchstart.x) - Math.min(swipe.touches.touchmove.x,swipe.touches.touchstart.x);
+
+                      console.log('distance',distance);
+
+        							if ( distance > swipe.touches.range ) {
+        							  console.log(swipe.touches.direction,swipe.touches);
+
+        							  ( swipe.touches.direction === 'left' ? _this.next() : _this.prev() );
+
+                        setTimeout(function(){
+                          _this.$pages.css({
+                						'transform' : ''
+              						});
+                        },500);
+
+        							} else {
+
+                        _this.$pages.css({
+              						'transform' : ''
+            						});
+        							}
+        						}
+        					default:
+        						break;
+        				}
+          		}
+          	},
+
+          	init: function() {
+          		_this.el.addEventListener('touchstart', swipe.touchHandler, false);
+          		_this.el.addEventListener('touchmove', swipe.touchHandler, false);
+          		_this.el.addEventListener('touchend', swipe.touchHandler, false);
+          	}
+          };
+          swipe.init();
+        }
+
+
 
         this.init();
 
@@ -303,21 +397,25 @@
         _this.options.afterToTransition.call(_this, _this.$currentPage);
       }
       this.init();
+      return true;
     }
+    return false;
   };
 
   proto.next = function() {
     if ( ! _moving ) {
       _moving = true;
-      this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? -1 : 1) * this.options.skip);
+      return this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? -1 : 1) * this.options.skip);
     }
+    return false;
   };
 
   proto.prev = function() {
     if ( ! _moving ) {
       _moving = true;
-      this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? 1 : -1) * this.options.skip);
+      return this.changePage(this.$pages.index(this.$currentPage) + (this.options.reverse ? 1 : -1) * this.options.skip);
     }
+    return false;
   };
 
   proto.close = function() {
@@ -395,6 +493,9 @@
     container: true, // Wrap pages in container
     aria: true, // support aria roles and tab-index
 
+
+    swipe: true,
+    swipeDirection: 'horizontal', // horizontal or vertical
 
     skip: 1,
     reverse: false,
